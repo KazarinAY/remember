@@ -1,0 +1,33 @@
+java
+	Insik Cho
+		Java Spring Tutorial		eng				http://www.youtube.com/playlist?list=PL1CDCD08791820E26		
+		Java Hibernate Tutorial 	eng				http://www.youtube.com/playlist?list=PLD7B66FC99A4C8A4D
+		Java Maven 					eng				http://www.youtube.com/playlist?list=PL5D217417C7EB6AFD
+		JSP & Servlets 				eng				http://www.youtube.com/playlist?list=PL3AC832985E43021E	
+	Golovach Courses
+
+
+education
+ 	Khan Academy
+		Pre-algebra 				eng				https://www.youtube.com/playlist?list=PL238F98B2C6422A95
+		Algebra 					eng				https://www.youtube.com/playlist?list=PL7AF1C14AF1B05894
+		Developmental Math 			eng				https://www.youtube.com/playlist?list=PL50D1D09ABE9CE271
+		Developmental Math 2		eng				https://www.youtube.com/playlist?list=PL1C68557896CFABA8
+		Developmental Math 3		eng				https://www.youtube.com/playlist?list=PLE23E2FDF6E935778
+		Linear Algebra 				eng				https://www.youtube.com/playlist?list=PLFD0EB975BA0CC1E0
+		Differential Equations		eng				https://www.youtube.com/playlist?list=PL96AE8D9C68FEB902
+		Competition Math			eng				https://www.youtube.com/playlist?list=PL7A6A47ED537EB925
+		Probability 				eng				https://www.youtube.com/playlist?list=PLC58778F28211FA19
+		Statistics 					eng				https://www.youtube.com/playlist?list=PL1328115D3D8A2566
+		Geometry					eng 			https://www.youtube.com/playlist?list=PL238F98B2C6422A95
+		Trigonometry				eng				https://www.youtube.com/playlist?list=PLD6DA74C1DBF770E7
+		Physics 					eng				https://www.youtube.com/playlist?list=PLAD5B880806EBE0A4		
+		Cosmology and Astronomy		eng				https://www.youtube.com/playlist?list=PL2186CFB2CE12A8B5
+		Biology						eng				https://www.youtube.com/playlist?list=PL7A9646BC5110CF64		
+		Chemistry					eng				https://www.youtube.com/playlist?list=PL166048DD75B05C0D
+		Organic Chemistry			eng				https://www.youtube.com/playlist?list=PL7305D1BC80498DA6		
+		Banking and Money			eng 			https://www.youtube.com/playlist?list=PLCECDA315A8848B99
+		Current Economics			eng				https://www.youtube.com/playlist?list=PL3C1664BF6E9E3C8F		
+		Valuation and Investing		eng				https://www.youtube.com/playlist?list=PL370CD04C45C6BB81
+	ПостНаука
+		Антропогенез				rus				http://www.youtube.com/playlist?list=PLh6dVTO7f4FZ2mMK7a64qYDm2RThg-v7F
