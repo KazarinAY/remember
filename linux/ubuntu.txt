@@ -1,0 +1,25 @@
+установка Nodejs
+	sudo apt-get update
+	sudo apt-get install nodejs
+	sudo ln -s /usr/bin/nodejs /usr/bin/node
+	npm install socket.io 			//из папки с сервером 
+
+ifconfig //узнать ip
+
+Язык
+	Change to en_US.utf8:
+	$ export LC_ALL=en_US.utf8 
+	$ export LANG="$LC_ALL"
+
+	квадратики вместо русских букв:
+		sudo -i
+		echo 'FRAMEBUFFER=Y' >> /etc/initramfs-tools/initramfs.conf
+		exit 
+		sudo update-initramfs -u
+		sudo dpkg-reconfigure console-setup
+		sudo dpkg-reconfigure keyboard-configuration 	//настроить и клавиатуру 
+
+nmap // сканирование сети
+	nmap -v 192.168.168.103
+	nmap -Pn 192.168.168.103
+	nmap -v 192.168.168.0-110
