@@ -1,3 +1,5 @@
-idea
-	changes - alt+9
-	usages - alt+F7
+
+https://xakep.ru/2015/02/02/liferay/
+http://wildfly.org/
+http://www.tutorialspoint.com/ejb/
+http://www.ejbtutorial.com/category/ejb
