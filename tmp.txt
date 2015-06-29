@@ -3,3 +3,5 @@ https://xakep.ru/2015/02/02/liferay/
 http://wildfly.org/
 http://www.tutorialspoint.com/ejb/
 http://www.ejbtutorial.com/category/ejb
+
+http://www.wunderground.com/weather/api/d/docs?MR=1

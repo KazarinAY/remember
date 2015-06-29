@@ -1,0 +1,23 @@
+http://www.tutorialspoint.com/jpa/jpa_quick_guide.htm
+
+Annotation				Description
+@Entity					Declares the class as an entity or a table.
+@Table					Declares table name.
+@Basic					Specifies non-constraint fields explicitly.
+@Embedded				Specifies the properties of class or an entity whose value is an instance of an embeddable class.
+@Id						Specifies the property, use for identity (primary key of a table) of the class.
+@GeneratedValue			Specifies how the identity attribute can be initialized such as automatic, manual, or value taken from a sequence table.
+@Transient				Specifies the property that is not persistent, i.e., the value is never stored in the database.
+@Column					Specifies the column attribute for the persistence property.
+@SequenceGenerator		Specifies the value for the property that is specified in the @GeneratedValue annotation. It creates a sequence.
+@TableGenerator			Specifies the value generator for the property specified in the @GeneratedValue annotation. It creates a table for value generation.
+@AccessType				This type of annotation is used to set the access type. If you set @AccessType(FIELD), then access occurs Field wise. If you set @AccessType(PROPERTY), then access occurs Property wise.
+@JoinColumn				Specifies an entity association or entity collection. This is used in many- to-one and one-to-many associations.
+@UniqueConstraint		Specifies the fields and the unique constraints for the primary or the secondary table.
+@ColumnResult			References the name of a column in the SQL query using select clause.
+@ManyToMany				Defines a many-to-many relationship between the join Tables.
+@ManyToOne				Defines a many-to-one relationship between the join Tables.
+@OneToMany				Defines a one-to-many relationship between the join Tables.
+@OneToOne				Defines a one-to-one relationship between the join Tables.
+@NamedQueries			specifies list of named queries.
+@NamedQuery				Specifies a Query using static name.
