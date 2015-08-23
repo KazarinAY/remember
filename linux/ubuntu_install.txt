@@ -1,0 +1,34 @@
+Установка и настройка ubuntu 15.
+
+Если при загрузке загрузочной флешки выйдет :"gfx boot c32: not a COM32R image:", нажать tab и выбрать действие
+
+NVIDIA driver-version 340.76 - nvidia-340
+
+Панель запуска: параметры системы - настройка экранов - Расположение панели запуска
+
+Языки - параметры системы - Язык системы
+
+sudo apt-get update
+
+sudo apt-get install keepassx
+
+sudo apt-get install git
+
+Downloads$ sudo dpkg -i dropbox_2015.02.12_amd64.deb
+sudo apt-get install -f				// for fix
+
+Downloads$ sudo dpkg -i sublime-text_build-3083_amd64.deb
+
+sudo add-apt-repository ppa:webupd8team/java
+sudo apt-get update
+sudo apt-get install oracle-java8-installer
+sudo apt-get install oracle-java8-set-default
+
+sudo apt-get install maven
+http://maven.apache.org/guides/getting-started/index.html
+
+
+
+
+sudo dpkg -i skype-ubuntu-precise_4.3.0.37-1_i386.deb 
+

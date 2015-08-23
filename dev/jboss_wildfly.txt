@@ -1,0 +1,15 @@
+cd wildfly-8.2.0.Final/bin/
+
+run
+standalone.sh --server-config=standalone-full-ha.xml
+or
+domain.sh --domain-config=my-domain-configuration.xml
+
+./add-user.sh
+
+
+5 ways to deploy - https://vimeo.com/25831010
+
+https://github.com/wildfly
+
+https://docs.jboss.org/author/display/WFLY8/Documentation
