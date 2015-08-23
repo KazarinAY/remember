@@ -4,4 +4,8 @@ http://wildfly.org/
 http://www.tutorialspoint.com/ejb/
 http://www.ejbtutorial.com/category/ejb
 
+<<<<<<< HEAD
 CDI Contexts and Dependency Injection for Java EE
+=======
+http://www.wunderground.com/weather/api/d/docs?MR=1
+>>>>>>> cf062bc5f3f250e978cc05d9229da33770602728
