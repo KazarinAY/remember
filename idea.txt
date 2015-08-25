@@ -1,2 +1,4 @@
 changes - alt+9
 usages - alt+F7
+
+find files - ctrl+n

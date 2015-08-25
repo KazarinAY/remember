@@ -1,0 +1,4 @@
+http://habrahabr.ru/post/236561/
+http://www.pushtotest.com/selenium-tutorial-for-beginners-tutorial-1
+
+http://seleniumhq.github.io/selenium/docs/api/java/index.html
