@@ -9,3 +9,17 @@ CDI Contexts and Dependency Injection for Java EE
 =======
 http://www.wunderground.com/weather/api/d/docs?MR=1
 >>>>>>> cf062bc5f3f250e978cc05d9229da33770602728
+
+
+VmServiceTray
+
+VBoxVmService.ini
+	[Settings]
+	VBOX_USER_HOME=C:\Users\kazarinayu\.VirtualBox
+	RunWebService=yes
+	PauseShutdown=5000
+
+	[Vm0]
+	VmName=telegramServer
+	ShutdownMethod=savestate
+	AutoStart=yes
