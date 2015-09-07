@@ -1,0 +1,21 @@
+Object
+	Throwable
+		
+		Error	
+			VirtualMachineError		
+				OutOfMemoryError
+				StackOverflowError
+			LinkageError
+		
+		Exception			
+			RuntimeException
+				IllegalArgumentExcrption
+					NumberFormatException
+				IndexOutofBoundsException
+					ArrayIndexOutOfBoundsException
+				ArithmeticException
+			IOException
+				FileNotFoundException
+				SocketException
+			ReflectiveOperationException
+				InvocationTargetException
