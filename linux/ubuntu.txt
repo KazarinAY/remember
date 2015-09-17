@@ -1,4 +1,4 @@
-jустановка Nodejs
+установка Nodejs
 	sudo apt-get update
 	sudo apt-get install nodejs
 	sudo ln -s /usr/bin/nodejs /usr/bin/node
@@ -23,3 +23,8 @@ nmap // сканирование сети
 	nmap -v 192.168.168.103
 	nmap -Pn 192.168.168.103
 	nmap -v 192.168.168.0-110
+
+internet from usb
+	sudo ifconfig usb0 up
+	sudo dhclient usb0 -v
+
