@@ -1,0 +1,9 @@
+git svn clone http://snr-energo:8080/svn/EnergyPortal/trunk
+cd trunk
+git svn fetch
+git remote add origin https://kazarinay@bitbucket.org/EnergoTeam/energyportal.git
+git push -u origin --all
+git push --tags
+
+
+https://www.atlassian.com/git/tutorials/migrating-migrate
