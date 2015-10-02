@@ -123,8 +123,8 @@ $ git show v1.4
 Создание новой ветки
 $ git branch testing
 
-Переход на ветку
-$ git checkout testing
+Переход на git
+$ ветку checkout testing
 
 Создать ветку и сразу же перейти на неё
 $ git checkout -b testing
