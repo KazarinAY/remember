@@ -1,51 +1,146 @@
+http://git-scm.com/
+
+Имя пользователя
+$ git config --global user.name "John Doe"
+$ git config --global user.email johndoe@example.com
+
+Выбор редактора
+$ git config --global core.editor emacs
+
+Утилита сравнения
+$ git config --global merge.tool vimdiff
+
+Проверка настроек
+$ git config --list
+
+Помощь
+$ git help <команда>
+$ git <команда> --help
+$ man git-<команда>
+
+Создание репозитория в существующем каталоге
 $ git init
 
-$ git status
+Клонирование существующего репозитория
+$ git clone /opt/git/project.git
+$ git clone git://github.com/schacon/grit.git
+$ git clone git://github.com/schacon/grit.git mygrit //с выбором каталога
 
-$ git add octocat.txt
+ Отображение удалённых репозиториев
+ $ git remote -v
 
-$ git commit -m "Add cute icticat story"
+Добавление удалённых репозиториев
+$ git remote add pb git://github.com/paulboone/ticgit.git 			//git remote add [сокращение] [url]
 
-$ dit add '*.txt'
+Извлечь всю информацию из репозитория
+$ git fetch pb 							//$ git fetch [remote-name]
 
-$ git commit -m 'Add all the octocat txt files'
+Отправка изменений в репозиторий (должно быть право на запись)
+$ git push origin master			//отправить ветку master на сервер origin
 
+Инспекция удалённого репозитория
+$ git remote show origin
+
+Удаление и переименование удалённых репозиториев
+$ git remote rename pb paul
+$ git remote rm paul
+
+Установка Git на сервер
+$ git clone --bare my_project my_project.gi
+
+Определение состояния файлов
+$ git status			//индексированные изменения
+$ git diff				//неиндексированные изменения
+
+Отслеживание(индексация) новых файлов
+$ git add README
+
+Отмена индексации файла
+$ git reset README
+
+Игнорирование файлов
+Создать файл .gitignore с перечислением шаблонов
+	пример файла .gitignore:
+		# комментарий — эта строка игнорируется
+		*.a		# не обрабатывать файлы, имя которых заканчивается на .a
+		!lib.a   # НО отслеживать файл lib.a, несмотря на то, что мы игнорируем все .a файлы с помощью предыдущего правила
+		/TODO   # игнорировать только файл TODO находящийся в корневом каталоге, не относится к файлам вида subdir/TODO
+		build/    # игнорировать все файлы в каталоге build/
+		doc/*.txt # игнорировать doc/notes.txt, но не doc/server/arch.txt
+
+Фиксация изменений
+$ git commit
+$ git commit -m "Story 182: Fix benchmarks for speed"
+$ git commit --amend 			//добавляет изменения к последнему коммиту
+
+Удаление файлов
+git rm filename
+$ git rm --cached readme.txt 		//далить файл из индекса, оставив его в рабочем каталоге.
+
+Перемещение файлов
+$ git mv file_from file_to
+
+Просмотр истории коммитов
 $ git log
+$ git log -p -2
+$ git log --stat
+$ git log --pretty=oneline			//short,full,fuller
+$ git log --pretty=format:"%h - %an, %ar : %s"
+	Параметр Описание выводимых данных
+	`%H`Хеш коммита
+	`%h`Сокращенный хеш коммита
+	`%T`Хеш дерева
+	`%t`Сокращенный хеш дерева
+	`%P`Хеши родительских коммитов
+	`%p`Сокращенные хеши родительских коммитов
+	`%an`Имя автора
+	`%ae`Электронная почта автора
+	`%ad`Дата автора (формат соответствует параметру --date= )
+	`%ar`Дата автора, относительная (пр. "2 мес. назад")
+	`%cn`Имя коммитера
+	`%ce`Электронная почта коммитера
+	`%cd`Дата коммитера
+	`%cr`Дата коммитера, относительная
+	`%s`Комментарий
+$ git log --pretty=format:"%h %s" --graph
+$ git log --since=2.weeks
+	Опция Описание
+	`-(n)`Показать последние n коммитов
+	`--since`, `--after`Ограничить коммиты теми, которые сделаны после указанной даты.
+	`--until`, `--before`Ограничить коммиты теми, которые сделаны до указанной даты.
+	`--author`Показать только те коммиты, автор которых соответствует указанной строке.
+	`--committer`Показать только те коммиты, коммитер которых соответствует указанной строке.
 
-$ git remote add origin https://github.com/try-git/try_git.git
+Просмотр меток
+$ git tag
 
-$ git push -u origin master
+Создание аннотированной метки
+$ git tag -a v1.4 -m 'my version 1.4'
 
-$ git pull origin master
+Посмотреть данные метки вместе с коммитом
+$ git show v1.4
 
-$ git diff HEAD
+Создание новой ветки
+$ git branch testing
 
-$ git add octofamily/octodog.txt
+Переход на git
+$ ветку checkout testing
 
-$ git diff --staged
+Создать ветку и сразу же перейти на неё
+$ git checkout -b testing
 
-$ git reset octofamily/octodog.txt
+слить (merge) изменения
+$ git merge hotfix
 
-$ git checkout -- octocat.txt
+$ git branch --merged
+$ git branch --no-merged
 
-$ git branch clean_up
+Перемещение (rebasing)
+$ git rebase --onto master server client		//«переключиться на ветку client, взять изменения от общего предка веток client и server и повторить их на master»
 
-$ git branch
+Прятанье
+$ git stash
+$ git stash list
+$ git stash apply
+$ git stash apply --index
 
-$ git checkout clean_up
-
-$ git rm '*.txt'
-
-$ git status
-
-$ git commit -m "Remove all the cats"
-
-$ git granch
-
-$ git checkout master
-
-$ git merge clean_up
-
-$ git branch -d clean_up
-
-$ git push
