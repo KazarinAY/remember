@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 установка Nodejs
+=======
+ jустановка Nodejs
+>>>>>>> 401ca3cdf8ffd1a6f27ef513da7d938d2cc97cf2
 	sudo apt-get update
 	sudo apt-get install nodejs
 	sudo ln -s /usr/bin/nodejs /usr/bin/node
