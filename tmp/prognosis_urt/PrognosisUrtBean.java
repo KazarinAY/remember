@@ -32,6 +32,23 @@ import java.util.*;
 @TransactionManagement(value = TransactionManagementType.BEAN)
 public class PrognosisUrtBean extends AbstractLoaderBean implements PrognosisUrt {
     private static final Logger LOG = LoggerFactory.getLogger(PrognosisUrt.class);
+    private static final Map<String, String> PARAMETERS_VALUES = new HashMap<>(13);
+    static {
+        PARAMETERS_VALUES.put("condensateLosses","[потери конденсата]");
+        PARAMETERS_VALUES.put("coeffBte","[КОЭФ bтэ]");
+        PARAMETERS_VALUES.put("boilerEfficiency","[КПД Котла]");
+        PARAMETERS_VALUES.put("kTv1","[КТВ1]");
+        PARAMETERS_VALUES.put("kTv2","[КТВ2]");
+        PARAMETERS_VALUES.put("coeffSnEtl","[коэф сн Этл]");
+        PARAMETERS_VALUES.put("coeffSnEel","[коэф сн Ээл]");
+        PARAMETERS_VALUES.put("rou100","[роу 100]");
+        PARAMETERS_VALUES.put("rou21","[роу 21]");
+        PARAMETERS_VALUES.put("rou13","[роу 13]");
+        PARAMETERS_VALUES.put("caloricContent","[калорийность]");
+        PARAMETERS_VALUES.put("bUslKindling","[Вусл растопка]");
+        PARAMETERS_VALUES.put("bTeNrPr","[Ь тэ нр пр]");
+    }
+
 
 //*******Станция
     @Override
@@ -41,7 +58,7 @@ public class PrognosisUrtBean extends AbstractLoaderBean implements PrognosisUrt
 
 //*******Генераторы
     @Override
-    public List<PrognosisUrtGetVariantsRecord> getPrognosisUrtGenerators(UUID uuid, DateTime bdt, String hour) {
+    public List<PrognosisUrtGetVariantsRecord> getGenerators(UUID uuid, DateTime bdt, String hour) {
         int hr = Integer.parseInt(hour);
         List<PrognosisUrtGetVariantsRecord> responseRecords = new ArrayList<>();
         Timestamp date = new Timestamp(bdt.plusHours( hr ).toDateTime().getMillis());
@@ -71,14 +88,14 @@ public class PrognosisUrtBean extends AbstractLoaderBean implements PrognosisUrt
     }
 
     @Override
-    public OperationStatus setPrognosisUrtGenerators(UUID uuid, CommonRestService commonRestService, PrognosisUrtSetRecord record) {
+    public OperationStatus setGeneratorsValue(UUID uuid, CommonRestService commonRestService, PrognosisUrtSetRecord record) {
 
         rightCheck("edit_urt_generator", findWebUser(commonRestService.getUserID()).getLogin());
 
         setData(record);
 
         try {
-            return recalcUrtVariantHour(record.dt, String.valueOf(record.hour), record.variant);
+            return recalcURT(record.dt, record.dt, record.variant);
         } catch (Exception e) {
             LOG.info(ErrorCode.EDIT_DATA.getMessage(e.getMessage()));
             throw new SecurityException(ErrorCode.EDIT_DATA.getMessage());
@@ -104,8 +121,7 @@ public class PrognosisUrtBean extends AbstractLoaderBean implements PrognosisUrt
                 copyVariantIntoUrtParameters(urtTypeTo, urtTypeFrom);
         try {
             int code = execute(insertSQL, deleteSQL);
-            String hr = String.valueOf(record.hour);
-            return recalcUrtVariantHour(record.dt, hr, urtTypeTo);
+            return recalcURT(record.dt, record.dt, urtTypeTo);
         } catch (Exception e) {
             LOG.error(ErrorCode.EDIT_DATA.getMessage(e.getMessage()));
             throw new SecurityException(ErrorCode.EDIT_DATA.getMessage());
@@ -139,8 +155,8 @@ public class PrognosisUrtBean extends AbstractLoaderBean implements PrognosisUrt
 
     //*******Параметры
     @Override
-    public List<PrognosisUrtParametersRecord> getPrognosisUrtParameters(UUID uuid, DateTime bdt, DateTime edt,Integer calculateType) {
-        String urtType = (calculateType==0) ? "'prognosis'" : (calculateType==1) ? "'min_max'":"";
+    public List<PrognosisUrtParametersRecord> getParameters(UUID uuid, DateTime bdt, DateTime edt, Integer variantNumber) {
+        String urtType = getCurrentVariantUrtType(variantNumber);
         List<PrognosisUrtParametersRecord> responseRecords = new ArrayList<PrognosisUrtParametersRecord>(0);
 
         LocalDateTime beginDt = bdt.withTime(0, 0, 0, 0).toLocalDateTime();
@@ -151,7 +167,7 @@ public class PrognosisUrtBean extends AbstractLoaderBean implements PrognosisUrt
                 "\n" +
                 "DECLARE @bdt DATETIME = :bdt\n" +
                 "DECLARE @edt DATETIME = :edt\n" +
-                "DECLARE @urt_type varchar(max) = "+urtType+"\n"+
+                "DECLARE @urt_type varchar(max) = '"+urtType+"'\n"+
                 "\n" +
                 "select CalendarHR.dt\n" +
                 "       ,datepart(hour,CalendarHR.dt)+1 as hour\n" +
@@ -370,16 +386,15 @@ public class PrognosisUrtBean extends AbstractLoaderBean implements PrognosisUrt
     }
 
     @Override
-    public OperationStatus setPrognosisUrtParameters(UUID uuid, CommonRestService commonRestService, PrognosisUrtParametersRecord record) {
-        String parametersTable = (record.calculateType==0) ? "parameters" : (record.calculateType==1) ? "min_max_parameters":"";
+    public OperationStatus setParameter(UUID uuid, CommonRestService commonRestService, PrognosisUrtSetRecord record) {
 
-        rightCheck("edit_urt_"+parametersTable, findWebUser(commonRestService.getUserID()).getLogin());
+        rightCheck("edit_urt_parameters", findWebUser(commonRestService.getUserID()).getLogin());
 
         String sql = getCurrentParameterUpdateString(record);
 
         try {
             int code = execute(sql);
-            return execStoredProcedureString(null, record);
+            return execStoredProcedureString(record);
         } catch (Exception e) {
             LOG.info(ErrorCode.EDIT_DATA.getMessage(e.getMessage()));
             throw new SecurityException(ErrorCode.EDIT_DATA.getMessage());
@@ -436,7 +451,7 @@ public class PrognosisUrtBean extends AbstractLoaderBean implements PrognosisUrt
 
         try {
             int code = execute(totalCopyString);
-            return recalcURT(toDt.withTime(0,0,0,0),toDt.withTime(23,0,0,0));
+            return recalcAllVariants(toDt, getVariants(fromDt));
         } catch (Exception e) {
             LOG.info(ErrorCode.EDIT_DATA.getMessage(e.getMessage()));
             throw new SecurityException(ErrorCode.EDIT_DATA.getMessage());
@@ -504,7 +519,6 @@ public class PrognosisUrtBean extends AbstractLoaderBean implements PrognosisUrt
 
 
 
-
     @Override
     public OperationStatus setUrtHeat(UUID uuid,DateTime beginDt, DateTime endDt,DateTime beginSelectDt,DateTime endSelectDt) {
 
@@ -559,7 +573,7 @@ public class PrognosisUrtBean extends AbstractLoaderBean implements PrognosisUrt
 
         try {
             int code = execute(queryString);
-            return recalcURT(beginDt,endDt);
+            return recalcURT(beginDt, endDt, "prognosis");
         } catch (Exception e) {
             LOG.info(ErrorCode.EDIT_DATA.getMessage(e.getMessage()));
             throw new SecurityException(ErrorCode.EDIT_DATA.getMessage());
@@ -585,9 +599,9 @@ public class PrognosisUrtBean extends AbstractLoaderBean implements PrognosisUrt
             insertIntoUrtParameters += getInsertIntoUrtParameresSQL(getCastDateTimeSql(dateTime, hourTo));
         }
 
-        String deleteSql = declareDates + deleteFromUrtGeneratorSQL;// + "\n" + deleteFromUrtParameters;
+        String deleteSql = declareDates + deleteFromUrtGeneratorSQL + "\n" + deleteFromUrtParameters;
         String insertSql = "DECLARE @fromDt DATETIME = " + getCastDateTimeSql(dateTime, hour) + "\n"
-                + insertIntoUrtGeneratorSQL;// + "\n" + insertIntoUrtParameters;
+                + insertIntoUrtGeneratorSQL + "\n" + insertIntoUrtParameters;
 
         try {
             int code = execute(insertSql, deleteSql);
@@ -603,33 +617,6 @@ public class PrognosisUrtBean extends AbstractLoaderBean implements PrognosisUrt
         }
 
     }
-
-
-
-    private OperationStatus recalcURT(DateTime beginDate, DateTime endDate) {
-        try {
-            int code = execute("exec [dbo].[urt_calculate]  '" + EPDateFormat.format(beginDate) + " 00:00:00' , '" + EPDateFormat.format(endDate) + " 23:00:00', 'prognosis'");
-            return OperationStatus.OK;
-        } catch (Exception e) {
-            LOG.info(ErrorCode.URT_RECALC_ERROR.getMessage(e.getMessage()));
-            return OperationStatus.ERROR;
-        }
-
-    }
-    private OperationStatus recalcURT(String beginDate, String endDate) {
-        try {
-
-            DateTime beginDt = EPDateFormat.dateTimeParse(beginDate);
-            DateTime endDt = EPDateFormat.dateTimeParse(endDate);
-            return recalcURT(beginDt,endDt);
-        } catch (ParseException e) {
-            LOG.info(ErrorCode.DT_PARSE_ERROR.getMessage(e.getMessage()));
-            return OperationStatus.ERROR;
-        }
-
-    }
-
-
 
     private String getBasicQuery(Integer generatorType) {
         String urtType = (generatorType==0) ? "'prognosis'" : (generatorType==1) ? "'min_max'":"";
@@ -908,194 +895,50 @@ public class PrognosisUrtBean extends AbstractLoaderBean implements PrognosisUrt
         return responseRecords;
     }
 
-    private String getCurrentParameterUpdateString(PrognosisUrtParametersRecord record){
-        String urtType = (record.calculateType==0) ? "'prognosis'" : (record.calculateType==1) ? "'min_max'":"";
-
+    private String getCurrentParameterUpdateString(PrognosisUrtSetRecord record){
+        String urtType = record.variant;
         String hr = String.valueOf(record.hour - 1);
-        String dt = " Cast('" + record.dt + " " + hr + ":00:00' AS DATETIME)";
-
-        String condensateLosses = (record.condensateLosses != null) ? getSqlFloatData(record.condensateLosses) : "NULL";
-        String coeffBte = (record.coeffBte != null) ? getSqlFloatData(record.coeffBte) : "NULL";
-        String boilerEfficiency = (record.boilerEfficiency != null) ? getSqlFloatData(record.boilerEfficiency) : "NULL";
-        String kTv1 = (record.kTv1 != null) ? getSqlFloatData(record.kTv1) : "NULL";
-        String kTv2 = (record.kTv2 != null) ? getSqlFloatData(record.kTv2) : "NULL";
-        String coeffSnEtl = (record.coeffSnEtl != null) ? getSqlFloatData(record.coeffSnEtl) : "NULL";
-        String coeffSnEel = (record.coeffSnEel != null) ? getSqlFloatData(record.coeffSnEel) : "NULL";
-        String rou100 = (record.rou100 != null) ? record.rou100.toString() : "NULL";
-        String rou21 = (record.rou21 != null) ? record.rou21.toString() : "NULL";
-        String rou13 = (record.rou13 != null) ? record.rou13.toString() : "NULL";
-        String caloricContent = (record.caloricContent != null) ? record.caloricContent.toString() : "NULL";
-        String bUslKindling = (record.bUslKindling != null) ? record.bUslKindling.toString() : "NULL";
-        String bTeNrPr = (record.bTeNrPr != null) ? record.bTeNrPr.toString() : "NULL";
+        String dt = getCastData("date", record.dt + " " + hr); //" Cast('" + record.dt + " " + hr + ":00:00' AS DATETIME)";
 
         String sql = "DECLARE @dt DATETIME = " + dt + "\n" +
-                "DECLARE @urt_type varchar(max) = " + urtType + "\n"+
+                "DECLARE @urt_type varchar(max) = '" + urtType + "'\n"+
                 "begin tran\n" +
                 "   UPDATE [dbo].[urt_parameters]\n" +
-                "   SET \n";
-
-        switch (record.column){
-            case "condensateLosses":
-                sql += "       [потери конденсата] = " + condensateLosses + "\n";
-                break;
-            case "coeffBte":
-                sql += "       [КОЭФ bтэ] = " + coeffBte + "\n";
-                break;
-            case "boilerEfficiency":
-                sql += "       [КПД Котла] = " + boilerEfficiency + "\n";
-                break;
-            case "kTv1":
-                sql += "       [КТВ1] = " + kTv1 + "\n";
-                break;
-            case "kTv2":
-                sql += "       [КТВ2] = " + kTv2 + "\n";
-                break;
-            case "coeffSnEtl":
-                sql += "       [коэф сн Этл] = " + coeffSnEtl + "\n";
-                break;
-            case "coeffSnEel":
-                sql += "       [коэф сн Ээл] = " + coeffSnEel + "\n";
-                break;
-            case "rou100":
-                sql += "       [роу 100] = " + rou100 + "\n";
-                break;
-            case "rou21":
-                sql += "       [роу 21] = " + rou21 + "\n";
-                break;
-            case "rou13":
-                sql += "       [роу 13] = " + rou13 + "\n";
-                break;
-            case "caloricContent":
-                sql += "       [калорийность] = " + caloricContent + "\n";
-                break;
-            case "bUslKindling":
-                sql += "       [Вусл растопка] = " + bUslKindling + "\n";
-                break;
-            case "bTeNrPr":
-                sql += "       [Ь тэ нр пр] = " + bTeNrPr + "\n";
-                break;
-        }
-
-        sql +=  "   where dt = @dt and [urt_type] = @urt_type\n" +
-                "\n" +
+                "   SET " + PARAMETERS_VALUES.get(record.valueName) + " = " + record.value + "\n" +
+                "   where dt = @dt and [urt_type] = @urt_type\n" +
                 "   if @@rowcount = 0\n" +
                 "   begin\n" +
-                "      INSERT INTO [dbo].[urt_parameters]([dt],[urt_type],";
+                "      INSERT INTO [dbo].[urt_parameters]([dt],[urt_type],"+ PARAMETERS_VALUES.get(record.valueName) + ")\n" +
+                "      select @dt,@urt_type, " + record.value +"\n   " +
+                "end\n" +
+                "commit tran\n";
 
-        switch (record.column){
-            case "condensateLosses":
-                sql += "[потери конденсата])\n select @dt,@urt_type, "+condensateLosses +"\n   end\n commit tran";
-                break;
-            case "coeffBte":
-                sql += "[КОЭФ bтэ])\n select @dt,@urt_type, "+coeffBte +"\n   end\n commit tran";
-                break;
-            case "boilerEfficiency":
-                sql += "[КПД Котла])\n select @dt,@urt_type, "+boilerEfficiency +"\n   end\n commit tran";
-                break;
-            case "kTv1":
-                sql += "[КТВ1])\n select @dt,@urt_type, "+kTv1 +"\n   end\n commit tran";
-                break;
-            case "kTv2":
-                sql += "[КТВ2])\n select @dt,@urt_type, "+kTv2 +"\n   end\n commit tran";
-                break;
-            case "coeffSnEtl":
-                sql += "[коэф сн Этл])\n select @dt,@urt_type, "+coeffSnEtl +"\n   end\n commit tran";
-                break;
-            case "coeffSnEel":
-                sql += "[коэф сн Ээл])\n select @dt,@urt_type, "+coeffSnEel +"\n   end\n commit tran";
-                break;
-            case "rou100":
-                sql += "[роу 100])\n select @dt,@urt_type, "+rou100 +"\n   end\n commit tran";
-                break;
-            case "rou21":
-                sql += "[роу 21])\n select @dt,@urt_type, "+rou21 +"\n   end\n commit tran";
-                break;
-            case "rou13":
-                sql += "[роу 13])\n select @dt,@urt_type, "+rou13 +"\n   end\n commit tran";
-                break;
-            case "caloricContent":
-                sql += "[калорийность] )\n select @dt,@urt_type, "+caloricContent +"\n   end\n commit tran";
-                break;
-            case "bUslKindling":
-                sql += "[Вусл растопка] )\n select @dt,@urt_type, "+bUslKindling +"\n   end\n commit tran";
-                break;
-            case "bTeNrPr":
-                sql += "[Ь тэ нр пр] )\n select @dt,@urt_type, "+bTeNrPr +"\n   end\n commit tran";
-                break;
-        }
 
         return sql;
     }
 
-    private OperationStatus execStoredProcedureString(PrognosisUrtSetRecord prognosisUrtDataRecord, PrognosisUrtParametersRecord parametersRecord) throws Exception {
-        if((prognosisUrtDataRecord==null && parametersRecord==null) || (prognosisUrtDataRecord!=null && parametersRecord!=null)){
+    private OperationStatus execStoredProcedureString(PrognosisUrtSetRecord parametersRecord) throws Exception {
+        if( parametersRecord==null){
             throw new Exception("Невозможно выполнить перерасчет: некорректные параметры");
         }
         DateTime prognosisEndDate = new DateTime().plusDays(3);
 
-        String bdt = "";
-        String edt = "";
-        String urtType = "";
+        String  bdt = parametersRecord.dt;
+        String  edt = getEdtOnParametersChange(parametersRecord);
+        edt = (!"".equals(edt))? edt : prognosisEndDate.getDayOfMonth()+"."+prognosisEndDate.getMonthOfYear()+"."+prognosisEndDate.getYear();
 
-        if(prognosisUrtDataRecord!=null){
-            bdt = prognosisUrtDataRecord.dt;
-            edt = prognosisUrtDataRecord.dt;
-        }else {
-            bdt = parametersRecord.dt;
-            edt = getEdtOnParametersChange(parametersRecord);
-            edt = (!"".equals(edt))? edt : prognosisEndDate.getDayOfMonth()+"."+prognosisEndDate.getMonthOfYear()+"."+prognosisEndDate.getYear();
-        }
-
-        return recalcURT(bdt,edt);
+        return recalcURT(bdt, edt, parametersRecord.variant);
 
     }
 
-    private String getEdtOnParametersChange(PrognosisUrtParametersRecord record){
-        String columnName = "";
-        String urtType = (record.calculateType==0)? "'prognosis'" : (record.calculateType==1) ? "'min_max'":"";
-        switch (record.column){
-            case "condensateLosses":
-                columnName = "[потери конденсата]";
-                break;
-            case "coeffBte":
-                columnName = "[КОЭФ bтэ]";
-                break;
-            case "boilerEfficiency":
-                columnName = "[КПД Котла]";
-                break;
-            case "kTv1":
-                columnName = "[КТВ1]";
-                break;
-            case "kTv2":
-                columnName = "[КТВ2]";
-                break;
-            case "coeffSnEtl":
-                columnName = "[коэф сн Этл]";
-                break;
-            case "coeffSnEel":
-                columnName = "[коэф сн Ээл]";
-                break;
-            case "rou100":
-                columnName = "[роу 100]";
-                break;
-            case "rou21":
-                columnName = "[роу 21]";
-                break;
-            case "rou13":
-                columnName = "[роу 13]";
-                break;
-            case "caloricContent":
-                columnName = "[калорийность] ";
-                break;
-            case "bUslKindling":
-                columnName = "[Вусл растопка] ";
-                break;
-            case "bTeNrPr":
-                columnName = "[Ь тэ нр пр] ";
-                break;
-        }
-        String sql ="select top(1) dt,"+columnName+" from [urt_parameters] where [urt_type]="+urtType+" and "+columnName + " is not null and dt > cast('"+record.dt +" "+ (record.hour-1)+":00:00' as datetime)";
+    private String getEdtOnParametersChange(PrognosisUrtSetRecord record){
+        String columnName = PARAMETERS_VALUES.get(record.valueName);
+        String variant = record.variant;
 
+        String sql ="select top(1) dt, " + columnName + "\n" +
+                "from [urt_parameters]\n" +
+                "where [urt_type]='" + variant + "' and "+ columnName + " is not null " +
+                "and dt > cast('"+record.dt + " " + (record.hour-1) + ":00:00' as datetime)";
         String edt = "";
         try{
             Query q = getEntityManager().createNativeQuery(sql);
@@ -1109,17 +952,6 @@ public class PrognosisUrtBean extends AbstractLoaderBean implements PrognosisUrt
 
         return edt;
     }
-
-
-
-
-
-
-
-
-
-
-
 
 
     /**
@@ -1188,32 +1020,36 @@ public class PrognosisUrtBean extends AbstractLoaderBean implements PrognosisUrt
         return queryString;
     }
 
-    /**
-     * Делает перерасчет [urt_calculation] для заданных дня, часа и типа урт
-     * @param date
-     * @param hr (от 0 до 23)
-     * @return
-     */
-    private OperationStatus recalcUrtVariantHour(String date, String hr, String variant) {
+    private OperationStatus recalcURT(DateTime beginDate, DateTime endDate, String variant) {
         try {
-            DateTime beginDt = EPDateFormat.dateTimeParse(date);
-            return recalcUrtVariantHour(beginDt, hr, variant);
-        } catch (ParseException e) {
-            LOG.error(ErrorCode.DT_PARSE_ERROR.getMessage(e.getMessage()));
+            int code = execute("exec [dbo].[urt_calculate]  '" + EPDateFormat.format(beginDate) + " 00:00:00' , '" + EPDateFormat.format(endDate) + " 23:00:00', '" + variant + "'");
+            return OperationStatus.OK;
+        } catch (Exception e) {
+            LOG.info(ErrorCode.URT_RECALC_ERROR.getMessage(e.getMessage()));
             return OperationStatus.ERROR;
         }
+
+    }
+    private OperationStatus recalcURT(String beginDate, String endDate, String variant) {
+        try {
+
+            DateTime beginDt = EPDateFormat.dateTimeParse(beginDate);
+            DateTime endDt = EPDateFormat.dateTimeParse(endDate);
+            return recalcURT(beginDt,endDt,variant);
+        } catch (ParseException e) {
+            LOG.info(ErrorCode.DT_PARSE_ERROR.getMessage(e.getMessage()));
+            return OperationStatus.ERROR;
+        }
+
     }
 
-    /**
-     * Делает перерасчет [urt_calculation] для заданных дня, часа и типа урт
-     * @param date
-     * @param hr (от 0 до 23)
-     * @return
-     */
-    private OperationStatus recalcUrtVariantHour(DateTime date, String hr, String variant) {
+    private OperationStatus recalcAllVariants(DateTime date, List<String> variants) {
+        String sql = "";
         try {
-            String sql = "exec [dbo].[urt_calculate]  '" + EPDateFormat.format(date) + " " + hr + ":00:00' , '" + EPDateFormat.format(date) + " "
-                            + hr + ":00:00', '"+variant +"'";
+            for (String variant : variants) {
+                sql += "exec [dbo].[urt_calculate]  '" + EPDateFormat.format(date) + " 00:00:00' , '"
+                            + EPDateFormat.format(date) + " 23:00:00', '"+ variant +"'\n";
+            }
             int code = execute(sql);
             return OperationStatus.OK;
         } catch (Exception e) {
@@ -1354,19 +1190,23 @@ public class PrognosisUrtBean extends AbstractLoaderBean implements PrognosisUrt
                         "  SELECT [КПД Котла],[КТВ1],[КТВ2],[КОЭФ bтэ],[коэф сн Ээл],[коэф сн Этл],[потери конденсата],[dt],[роу 100],[роу 13],[роу 21],[калорийность],[Вусл растопка],[Ь тэ нр пр],[urt_type]\n" +
                         "  FROM [dbo].[urt_parameters]\n" +
                         "  where dt = @dt_param and [urt_type] = '"+urtTypeFrom+"' ) s\n" +
-                        joinParameter("КПД Котла",urtTypeFrom,1) + "\n" +
-                        joinParameter("КТВ1",urtTypeFrom,2) + "\n" + //todo top 10
-                        joinParameter("КТВ2",urtTypeFrom,3) + "\n" +
-                        joinParameter("КОЭФ bтэ",urtTypeFrom,4) + "\n" +
-                        joinParameter("коэф сн Ээл",urtTypeFrom,5) + "\n" +
-                        joinParameter("коэф сн Этл",urtTypeFrom,6) + "\n" +
-                        joinParameter("потери конденсата",urtTypeFrom,7) + "\n" +
-                        joinParameter("роу 100",urtTypeFrom,8) + "\n" +
-                        joinParameter("роу 13",urtTypeFrom,9) + "\n" +
-                        joinParameter("роу 21",urtTypeFrom,10) + "\n" +
-                        joinParameter("калорийность",urtTypeFrom,11) + "\n" +
-                        joinParameter("Вусл растопка",urtTypeFrom,12) + "\n" +
-                        joinParameter("Ь тэ нр пр",urtTypeFrom,13) + "\n" +
+//                        "  full join (\n" +
+//                        "      select top 10 [КТВ1] as [КТВ1 last] from [urt_parameters]\n" +
+//                        "      where [КТВ1] is not null and [urt_parameters].urt_type = '"+urtTypeFrom+"'\n" +
+//                        "      order by dt desc) s1 on 1=1\n\n" +
+                        joinParameter("КТВ1",urtTypeFrom,1) +
+                        joinParameter("КПД Котла",urtTypeFrom,2) +
+                        joinParameter("КТВ2",urtTypeFrom,3) +
+                        joinParameter("КОЭФ bтэ",urtTypeFrom,4) +
+                        joinParameter("коэф сн Ээл",urtTypeFrom,5) +
+                        joinParameter("коэф сн Этл",urtTypeFrom,6) +
+                        joinParameter("потери конденсата",urtTypeFrom,7) +
+                        joinParameter("роу 100",urtTypeFrom,8) +
+                        joinParameter("роу 13",urtTypeFrom,9) +
+                        joinParameter("роу 21",urtTypeFrom,10) +
+                        joinParameter("калорийность",urtTypeFrom,11) +
+                        joinParameter("Вусл растопка",urtTypeFrom,12) +
+                        joinParameter("Ь тэ нр пр",urtTypeFrom,13) +
                         "";
     }
 
@@ -1378,7 +1218,7 @@ public class PrognosisUrtBean extends AbstractLoaderBean implements PrognosisUrt
         return  "  full join (\n" +
                 "      select top 1 ["+parameter+"] as ["+parameter+" last] from [urt_parameters]\n" +
                 "      where ["+parameter+"] is not null and [urt_parameters].urt_type = '"+urtTypeFrom+"'\n" +
-                "      order by dt desc) s"+index+" on 1=1\n";
+                "      order by dt desc) s"+index+" on 1=1\n\n";
     }
 
     private String getInsertIntoUrtGeneratorSQL(String urtType, DateTime dt, Integer hour) {
@@ -1469,23 +1309,22 @@ public class PrognosisUrtBean extends AbstractLoaderBean implements PrognosisUrt
         String hr = String.valueOf(record.hour);
         String dt = " Cast('" + record.dt + " " + hr + ":00:00' AS DATETIME)";
 
-        String tableName = "urt_generaor";
         String value = (record.value != null) ? getSqlFloatData(record.value) : "NULL";
         String valueName = record.valueName;
         if (valueName.startsWith("противодавление"))
             valueName = valueName.replace("противодавление","производственный отбор");
 
         String sql = "DECLARE @dt DATETIME = " + dt + "\n" +
-                "DECLARE @urt_type varchar(max) = 'prognosis'\n" +
+                "DECLARE @urt_type varchar(max) = '"+record.variant+"'\n" +
                 "begin tran\n" +
-                "   UPDATE [dbo]." + tableName + "\n" +
+                "   UPDATE [dbo].[urt_generator]\n" +
                 "   SET \n" +
                 "["+valueName + "]=" + value +
                 "   where dt = @dt " + tgUpdate + " and [urt_type] "+isNotNull+"\n" +
                 "\n" +
                 "   if @@rowcount = 0\n" +
                 "   begin\n" +
-                "      INSERT INTO [dbo]." + tableName + "([dt],[urt_type],[" + valueName + "]"+tgInsert+")\n" +
+                "      INSERT INTO [dbo].[urt_generator] ([dt],[urt_type],[" + valueName + "]"+tgInsert+")\n" +
                 "      select @dt,@urt_type," + value + tgValue + "\n" +
                 "   end\n" +
                 "commit tran";
